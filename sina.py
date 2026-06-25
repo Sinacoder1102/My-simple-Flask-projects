@@ -1,40 +1,44 @@
-from flask import Flask, request, render_template, session, redirect, url_for
+from flask import Flask, redirect,session,render_template,request,url_for
 
 app = Flask(__name__)
-app.secret_key = "sinasina789"
+app.secret_key = "sinazarei78952"
 
+@app.route("/")
+def loginindex():
+    return render_template("form12.html")
 
-@app.route("/", methods=["GET", "POST"])
-def main_index():
+@app.route("/login", methods=["GET", "POST"])
+def mainindex():
 
     if request.method == "POST":
-
         username = request.form.get("username")
-        user_id = request.form.get("id")
+        userid = request.form.get("id")
+
+        print("username =", username)
+        print("userid =", userid)
 
         session["username"] = username
-        session["user_id"] = user_id
+        session["userid"] = userid
 
-        print("SESSION AFTER SAVING:", dict(session))
+        # print("session =", dict(session))
 
-        return redirect(url_for("show_situation"))
+        return redirect(url_for("show"))
 
     return render_template("form.html")
 
+@app.route("/situation",methods=["GET","POST"])
+def show():
+    if "username" not in session:
+        return redirect(url_for("mainindex"))
+    
+    username = session["username"]
+    userid = session["userid"]
 
-@app.route("/situation")
-def show_situation():
+    return f"Your username : {username} and your id : {userid}"
 
-    print("SESSION IN SITUATION:", dict(session))
+@app.route("/logout")
+def user_logout():
+    session.clear()
 
-    username_s = session.get("username")
-    id_s = session.get("user_id")
+    return redirect(url_for("mainindex"))
 
-    if username_s is None or id_s is None:
-        return "Please fill out the form!"
-
-    return f"""
-    <h1>Information</h1>
-    <p>Username: {username_s}</p>
-    <p>ID: {id_s}</p>
-    """
