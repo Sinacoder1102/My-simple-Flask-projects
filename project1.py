@@ -1,30 +1,30 @@
-from flask import Flask,request,render_template,make_response
+from flask import Flask, redirect,request,render_template,session,make_response
 
 app = Flask(__name__)
+app.secret_key = "mysecret9865"
 
 @app.route("/")
 def index():
-    return render_template("form.html")
+    return render_template("form12.html")
 
-@app.route("/welcome" , methods=["GET","POST"])
-def say_welcome():
-    username = None
-    password = None
-
+@app.route("/login",methods=["POST"])
+def login():
     if request.method == "POST":
         username = request.form.get("username")
+        user_id = request.form.get("userid")
         password = request.form.get("password")
-        return f"<h1>Your username is ({username})</h1> <h1>and your password is {password}</h1>"
-    
-    return render_template("result.html",username=username,password=password)
 
-@app.route("/Set")
-def setting():
-    response = make_response("Cookie saved!")
-    response.set_cookie("username","sina")
-    return response
+        if username == "admin" and password == "4567":
+            session["username"] = username
+            session["user_id"] = user_id
+            return redirect("/result")
+        else:
+            return "<h1>wrong username or password for admin</h1>"
+    if request.method == "GET":
+        return redirect("/")
 
-@app.route("/Get")
-def getting():
-    username = request.cookies.get("username")
-    return f"Hello {username}"
+@app.route("/result",methods=["POST"])
+def check():
+    if "username" not in session:
+        return redirect("/")
+    return render_template("result.html",username1 = session.get("username"),user_id1 = session.get("user_id"))
