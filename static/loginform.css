@@ -1,0 +1,86 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Consolas", "Courier New", monospace;
+}
+
+body {
+    height: 100vh;
+    background: #0a0a0a;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #00ff88;
+}
+
+form {
+    width: 380px;
+    background: #111;
+    border: 2px solid #00ff88;
+    border-radius: 15px;
+    padding: 35px;
+    box-shadow: 0 0 25px rgba(0, 255, 136, 0.4);
+}
+
+form::before {
+    content: "LOGIN";
+    display: block;
+    text-align: center;
+    font-size: 28px;
+    font-weight: bold;
+    color: #00ff88;
+    margin-bottom: 30px;
+    letter-spacing: 3px;
+}
+
+input {
+    width: 100%;
+    margin-bottom: 20px;
+    padding: 14px;
+    background: #000;
+    border: 2px solid #00ff88;
+    border-radius: 8px;
+    color: #00ff88;
+    font-size: 16px;
+    transition: .3s;
+}
+
+input::placeholder {
+    color: #66ffbb;
+}
+
+input:focus {
+    outline: none;
+    box-shadow: 0 0 15px #00ff88;
+    border-color: #00ffaa;
+}
+
+button {
+    width: 100%;
+    padding: 14px;
+    background: #00ff88;
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    font-size: 17px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: .3s;
+}
+
+button:hover {
+    background: #00ffaa;
+    box-shadow: 0 0 20px #00ff88;
+    transform: translateY(-2px);
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+@media (max-width: 450px) {
+    form {
+        width: 90%;
+    }
+}
