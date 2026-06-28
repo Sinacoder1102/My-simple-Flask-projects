@@ -1,44 +1,30 @@
-from flask import Flask, redirect,session,render_template,request,url_for
+# Importing models
+from flask import Flask,request,session,render_template
+from datetime import timedelta
 
+# The main app
 app = Flask(__name__)
-app.secret_key = "sinazarei78952"
+app.secret_key = "Server's_reload245"
+app.permanent_session_lifetime = timedelta(seconds=10)
 
 @app.route("/")
-def loginindex():
-    return render_template("form12.html")
+def loginpage():
+    return render_template("loginform01.html")
 
-@app.route("/login", methods=["GET", "POST"])
-def mainindex():
+@app.route("/saving",methods=["POST"])
+def show_it():
+    username = request.form.get("username")
+    password = request.form.get("password")
+    user_id = request.form.get("userid")
 
-    if request.method == "POST":
-        username = request.form.get("username")
-        userid = request.form.get("id")
+    session.permanent = True
 
-        print("username =", username)
-        print("userid =", userid)
+    session["username"] = username
+    session["userid"] = user_id
 
-        session["username"] = username
-        session["userid"] = userid
+    return render_template("deletelog.html" , message = "Your informations was saved succesfully!")
 
-        # print("session =", dict(session))
-
-        return redirect(url_for("show"))
-
-    return render_template("form.html")
-
-@app.route("/situation",methods=["GET","POST"])
-def show():
-    if "username" not in session:
-        return redirect(url_for("mainindex"))
-    
-    username = session["username"]
-    userid = session["userid"]
-
-    return f"Your username : {username} and your id : {userid}"
-
-@app.route("/logout")
-def user_logout():
+@app.route("/logout",methods=["POST"])
+def log_out_user():
     session.clear()
-
-    return redirect(url_for("mainindex"))
-
+    return "Your informations succesfully removed from on this page!"
