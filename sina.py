@@ -40,8 +40,8 @@ def show_the_final_result():
     cur = conn.cursor()
 
     cur.execute(
-        """INSERT INTO users(username,password,user_id)""",
-        (username,user_id,password)
+        """INSERT INTO users(username,password,user_id) VALUES(%s,%s,%s)""",
+        (username,password,user_id)
     )
 
     conn.commit()
