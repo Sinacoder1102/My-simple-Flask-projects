@@ -1,17 +1,16 @@
 # Importing models
-import datetime
-import psycopg as postgres
-from flask import Flask,request,session,render_template,redirect,url_for
+from flask import Flask,request,redirect,render_template, session,url_for
 from datetime import timedelta
+import psycopg
 
-# Settings
+# Giving the initial settings
 app = Flask(__name__)
-app.secret_key = "Helloworld544313"
-app.permanent_session_lifetime = datetime.timedelta(seconds=20)
+app.secret_key = "Sina-secret-key243"
+app.permanent_session_lifetime = timedelta(seconds=20)
 
-# Getting connection
-def get_connection():
-    return postgres.connect(
+# Getting connection from postgres
+def connection():
+    return psycopg.connect(
         host = "localhost",
         dbname = "postgres",
         user = "postgres",
@@ -19,65 +18,54 @@ def get_connection():
         port = 5432
     )
 
-# Login Route
-@app.route("/login",methods=["GET","POST"])
-def login():
-    return render_template("loginform.html")
+# The login route
+@app.route("/login")
+def loginuser():
+    return render_template("loginform01.html")
 
-# The main route
-@app.route("/")
-def index():
-    return redirect(url_for("login")) 
+# Just a route for redirecting to the login tab
+@app.route("/",methods=["GET","POST"])
+def return_to_loginform():
+    return redirect(url_for("loginuser"))
 
-# The result route
-@app.route("/result",methods=["POST"])
-def show_the_final_result():
+# Saving informatios 
+@app.route("/savinginfs",methods=["POST"])
+def show_ways():
+    # Making initial variables
     username = request.form.get("username")
     password = request.form.get("password")
-    user_id = request.form.get("userid")
+    age = request.form.get("age")
 
-    conn = get_connection()
-    cur = conn.cursor()
+    # Defining variables of postgres
+    conn = connection()
+    postgres_cursor = conn.cursor()
 
-    cur.execute(
-        """INSERT INTO users(username,password,user_id) VALUES(%s,%s,%s)""",
-        (username,password,user_id)
-    )
-
-    conn.commit()
-
-    cur.close()
-    conn.close()
-
-    session["username"] = username
-    session["userid"] = user_id
-
+    # Activing the session's time
     session.permanent = True
 
-    get_username = session.get("username")
-    get_userid = session.get("userid")
+    # Defining sessions
+    session["username"] = username
+    session["age"] = age
 
-    return redirect(url_for("dashboard"))
+    # Making a table
+    postgres_cursor.execute(
+        """CREATE TABLE IF NOT EXISTS siteusers(
+        id SERIAL PRIMARY KEY,
+        username VARCHAR(60) UNIQUE NOT NULL,
+        password VARCHAR(100) NOT NULL,
+        age INTEGER 
+        )"""
+    )
 
-@app.route("/dashboard")
-def dashboard():
+    # Adding users to database
+    postgres_cursor.execute(
+        """INSERT INTO siteusers(username,password,age) VALUES (%s,%s,%s)""",
+        (username,password,age)
+    )
+    conn.commit()
 
-    conn = get_connection()
-    cur = conn.cursor()
-
-    cur.execute("SELECT * FROM users")
-
-    users = cur.fetchall()
-
-    cur.close()
+    # Closing 
+    postgres_cursor.close()
     conn.close()
 
-    return str(users)
-
-# The logout route
-@app.route("/logout",methods=["POST"])
-def deleteing():
-    session.clear()
-    return "<h1>Informations deleted succesfully!</h1>"
-
-
+    return "Informations saved successfully!"
