@@ -2,6 +2,7 @@
 from flask import Flask,request,redirect,render_template, session,url_for
 from datetime import timedelta
 import psycopg
+from werkzeug.security import generate_password_hash,check_password_hash
 
 # Giving the initial settings
 app = Flask(__name__)
@@ -36,6 +37,8 @@ def show_ways():
     password = request.form.get("password")
     age = request.form.get("age")
 
+    hashed_pass = generate_password_hash(password)
+
     # Defining variables of postgres
     conn = connection()
     postgres_cursor = conn.cursor()
@@ -52,7 +55,7 @@ def show_ways():
         """CREATE TABLE IF NOT EXISTS siteusers(
         id SERIAL PRIMARY KEY,
         username VARCHAR(60) UNIQUE NOT NULL,
-        password VARCHAR(100) NOT NULL,
+        password VARCHAR(500) NOT NULL,
         age INTEGER 
         )"""
     )
@@ -60,7 +63,7 @@ def show_ways():
     # Adding users to database
     postgres_cursor.execute(
         """INSERT INTO siteusers(username,password,age) VALUES (%s,%s,%s)""",
-        (username,password,age)
+        (username,hashed_pass,age)
     )
     conn.commit()
 
@@ -68,4 +71,36 @@ def show_ways():
     postgres_cursor.close()
     conn.close()
 
-    return "Informations saved successfully!"
+    return f"Informations saved successfully! {render_template("deletelog.html")}"
+
+@app.route("/logout",methods=["POST"])
+def logout_user():
+    session.clear()
+    return "You logged out successfully!"
+
+
+@app.route("/delete_account",methods=["POST"])
+def delete_user():
+    if "username" not in session:
+        return redirect(url_for("loginuser"))
+    
+    username = session["username"]
+    print("Username : ",username)
+
+    conn = connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        "DELETE FROM siteusers WHERE username = %s",
+        (username,)
+    )
+
+    conn.commit()
+
+    cur.close()
+    conn.close()
+
+
+    session.clear()
+
+    return "<h2>The informations deleted successfully!</h2>"
