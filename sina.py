@@ -7,7 +7,7 @@ from werkzeug.security import generate_password_hash,check_password_hash
 # Giving the initial settings
 app = Flask(__name__)
 app.secret_key = "Sina-secret-key243"
-app.permanent_session_lifetime = timedelta(seconds=20)
+app.permanent_session_lifetime = timedelta(minutes=5)
 
 # Getting connection from postgres
 def connection():
@@ -85,10 +85,11 @@ def delete_user():
         return redirect(url_for("loginuser"))
     
     username = session["username"]
-    print("Username : ",username)
 
     conn = connection()
     cur = conn.cursor()
+
+    print("Deleting:", username)
 
     cur.execute(
         "DELETE FROM siteusers WHERE username = %s",
@@ -104,3 +105,50 @@ def delete_user():
     session.clear()
 
     return "<h2>The informations deleted successfully!</h2>"
+
+
+
+@app.route("/login_check",methods=["POST"])
+def checkiflogin():
+    username = request.form.get("username")
+    password = request.form.get("password")
+
+    conn = connection()
+    postgres_cur = conn.cursor()
+
+    postgres_cur.execute(
+        "SELECT password,age FROM siteusers WHERE username = %s",
+        (username,)
+    )
+
+    user = postgres_cur.fetchone()
+
+    if user is None:
+        return "<h3>The Username doesn't exist.</h3>"
+
+    if check_password_hash(user[0] , password):
+        session.permanent = True
+        session["username"] = username
+        session["age"] = user[1]
+
+        postgres_cur.close()
+        conn.close()
+
+        return redirect(url_for("dashboard"))
+    
+    postgres_cur.close()
+    conn.close()
+
+    return "<h1>The Wrong password........</h1>"
+    
+
+@app.route("/dashboard")
+def dashboard():
+    if "username" not in session:
+        return redirect(url_for("loginuser"))
+
+    return f"""<h1>Welcome {session["username"]}</h1> <h2>Your age is {session["age"]}</h2>""" 
+   
+@app.route("/register")
+def register():
+    return render_template("register.html")
