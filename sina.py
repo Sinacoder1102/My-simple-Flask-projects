@@ -1,5 +1,5 @@
 # Importing models
-from flask import Flask,request,redirect,render_template, session,url_for
+from flask import Flask,request,redirect,render_template,session,url_for
 from datetime import timedelta
 import psycopg
 from werkzeug.security import generate_password_hash,check_password_hash
@@ -59,6 +59,20 @@ def show_ways():
         age INTEGER 
         )"""
     )
+
+    # Checking the username
+    postgres_cursor.execute(
+        "SELECT username FROM siteusers WHERE username = %s",
+        (username,)
+    )
+
+    exiting_user = postgres_cursor.fetchone()
+
+    if exiting_user:
+        postgres_cursor.close()
+        conn.close()
+
+        return "This username is already exists."
 
     # Adding users to database
     postgres_cursor.execute(
