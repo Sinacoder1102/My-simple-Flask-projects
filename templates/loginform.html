@@ -3,16 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The login form</title>
+    <title>login form</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='loginform.css') }}">
 </head>
 <body>
-    <form action="/result" method="post">
+<div class="card">
+    <form action="/welcomeback" method="post">
         <input type="text" name="username" placeholder="Username">
         <input type="password" name="password" placeholder="Password">
-        <input type="number" name="userid" placeholder="User's id">
+
         <button type="submit">
-            Click here to submit
+            Login
         </button>
     </form>
+
+    <form action="/register" method="post" class="register">
+        <h4>Don't you have an account?</h4>
+
+        <button type="submit">
+            Create Account!
+        </button>
+    </form>
+
+</div>
 </body>
 </html>
