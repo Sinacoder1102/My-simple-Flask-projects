@@ -19,23 +19,6 @@ def connection():
         port=5432
     )
 
-# Creating the table
-connect = connection()
-cur1 = connect.cursor()
-
-cur1.execute(
-    """CREATE TABLE IF NOT EXISTS siteusers(
-    id SERIAL PRIMARY KEY,
-    username VARCHAR(50) UNIQUE NOT NULL,
-    password VARCHAR(300) NOT NULL,
-    userid INTEGER NOT NULL
-
-    )"""
-)
-connect.commit()
-cur1.close()
-connect.close()
-
 # Main route
 @app.route("/")
 def red_to_login():
@@ -57,7 +40,6 @@ def saving_informations():
         userid = request.form.get("userid")
 
         session["username"] = username
-        session["password"] = password
         session["userid"] = userid
 
         session.permanent = True
@@ -76,10 +58,53 @@ def saving_informations():
         postcur.close()
         conn.close()
 
-        return "<h3>Account created successfully!</h3>"
+        return redirect(url_for("login"))
     
     except Exception as ex:
         return f"Ops!!!!!!! : {ex}"
     
+@app.route("/welcomeback",methods=["POST"])
+def saywelcomeback():
+    username = request.form.get("username")
+    password = request.form.get("password")
 
+    conn = connection()
+    postcurs = conn.cursor()
 
+    postcurs.execute(
+        "SELECT username,password,userid FROM siteusers WHERE username = %s",
+        (username,)
+    )
+
+    user = postcurs.fetchone()
+
+    postcurs.close()
+    conn.close()
+
+    if user is None:
+        return "User not found!"
+    
+    db_username, db_pass, db_userid = user
+
+    if check_password_hash(db_pass,password):
+        session["username"] = db_username
+        session["userid"] = db_userid
+        session.permanent = True
+
+        return redirect(url_for("dashboard"))
+    else:
+        return "<h1>Wrong password!!!!</h1>"
+    
+@app.route("/dashboard")
+def dashboard():
+    if "username" not in session:
+        return redirect(url_for("login"))
+    
+    return f"""Welcome {session["username"]}
+    your id is {session["userid"]}
+    """
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("login"))
