@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='profile.css') }}">
+</head>
+<body>
+
+<div class="container">
+
+    <h1>Your Profile</h1>
+
+    <div class="info">
+        <p><strong>Username:</strong> {{ username }}</p>
+        <p><strong>User ID:</strong> {{ userid }}</p>
+    </div>
+
+    <div class="buttons">
+        <a href="/dashboard" class="dashboard">Dashboard</a>
+        <a href="/logout" class="logout">Logout</a>
+    </div>
+
+</div>
+
+</body>
+</html>

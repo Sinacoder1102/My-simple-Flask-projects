@@ -1,5 +1,5 @@
 # Importing models
-from flask import Flask,request,redirect,render_template, session,url_for
+from flask import Flask,request,redirect,render_template, session,url_for,flash
 import psycopg
 from datetime import timedelta
 from werkzeug.security import generate_password_hash,check_password_hash
@@ -100,11 +100,26 @@ def dashboard():
     if "username" not in session:
         return redirect(url_for("login"))
     
-    return f"""Welcome {session["username"]}
-    your id is {session["userid"]}
-    """
+    return render_template(
+        "dashboard.html",
+        username = session["username"],
+        userid = session["userid"]
+    )
 
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect(url_for("login"))
+
+
+@app.route("/profile")
+def showprof():
+    if "username" not in session:
+        return redirect(url_for("login"))
+    
+    return render_template(
+        "profile.html",
+        username = session["username"],
+        userid = session["userid"]
+    )
+
