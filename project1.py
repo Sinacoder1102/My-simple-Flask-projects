@@ -123,3 +123,89 @@ def showprof():
         userid = session["userid"]
     )
 
+@app.route("/editprofile")
+def editprof():
+    if "username" not in session:
+        return redirect(url_for("login"))
+    
+    return render_template(
+        "editprofile.html",
+        username = session["username"]
+    )
+
+@app.route("/updateprofile" , methods=["POST"])
+def updateprof():
+    if "username" not in session:
+        return redirect(url_for("login"))
+    
+    new_username = request.form.get("username")
+    
+    conn = connection()
+    postcursor = conn.cursor()
+
+    postcursor.execute(
+        """UPDATE siteusers
+        SET username = %s
+        WHERE userid = %s
+        """,
+        (new_username,session["userid"])
+    )
+
+    conn.commit()
+    postcursor.close()
+    conn.close()
+
+    session["username"] = new_username
+
+    return redirect(url_for("showprof"))
+
+@app.route("/changepassword")
+def changepassword():
+    if "username" not in session:
+        return redirect(url_for("login"))
+
+    return render_template("changepass.html")
+
+
+@app.route("/updatepassword" , methods=["POST"])
+def updatepass():
+    if "username" not in session:
+        return redirect(url_for("login"))
+
+    new_pass = request.form.get("newpassword")
+    old_pass = request.form.get("oldpassword")
+
+    conn = connection()
+    cur2 = conn.cursor()
+
+    cur2.execute(
+        "SELECT password FROM siteusers WHERE userid = %s",
+        (session["userid"],)
+    )
+
+    user = cur2.fetchone()
+
+    db_password = user[0]
+    
+    if check_password_hash(db_password,old_pass):
+       new_hashed_password = generate_password_hash(new_pass)
+       cur2.execute(
+           """
+           UPDATE siteusers
+           SET password = %s
+           WHERE userid = %s
+           """,
+           (new_hashed_password,session["userid"])
+       ) 
+
+       conn.commit()
+       cur2.close()
+       conn.close()
+
+       return redirect(url_for("showprof"))
+    
+    else:
+        cur2.close()
+        conn.close()
+        return "Current password is incorrect!"
+    
