@@ -209,3 +209,25 @@ def updatepass():
         conn.close()
         return "Current password is incorrect!"
     
+@app.route("/deleteaccount" , methods=["POST"])
+def deleteaccount():
+    if "username" not in session:
+        return redirect(url_for("login"))
+    
+    conn = connection()
+    cur3 = conn.cursor()
+
+    cur3.execute(
+        "DELETE FROM siteusers WHERE userid = %s",
+        (session["userid"],)
+    )
+
+    conn.commit()
+    cur3.close()
+    conn.close()
+
+    session.clear()
+
+    flash("Account deleted successfully!")
+    return redirect(url_for("login"))
+
