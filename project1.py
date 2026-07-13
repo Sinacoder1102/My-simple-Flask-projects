@@ -1,4 +1,5 @@
 # Importing models
+import re
 from flask import Flask,request,redirect,render_template, session,url_for,flash
 import psycopg
 from datetime import timedelta
@@ -38,7 +39,11 @@ def saving_informations():
         username = request.form.get("username","").strip()
         password = request.form.get("password","").strip()
         userid = request.form.get("userid","").strip()
+        confirmpass = request.form.get("confirmpass" , "").strip()
 
+        if password != confirmpass :
+            flash("passwords are not match")
+            return redirect(url_for("register"))
 
         conn = connection()
         postcur = conn.cursor()
@@ -53,6 +58,10 @@ def saving_informations():
         
         if len(username) > 20 :
             flash("The username mustn't be more than 20 characters")
+            return redirect(url_for("register"))
+        
+        if not re.fullmatch(r"[A-Za-Z0--9_]+" , username):
+            flash("Username only contains letter,numbers and _")
             return redirect(url_for("register"))
         
         if len(password) < 8 :
