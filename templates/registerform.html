@@ -7,7 +7,16 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='register.css') }}">
 </head>
 <body>
-    <form action="/savinginfs" method="post">
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <p style="color:red; text-align:center;">{{ message }}</p>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form action="/savinginfs" method="POST">
         <input type="text" name="username" placeholder="Username">
         <input type="password" name="password" placeholder="Password">
         <input type="number" name="userid" placeholder="User ID">
@@ -16,5 +25,6 @@
             Create account!
         </button>
     </form>
+
 </body>
 </html>

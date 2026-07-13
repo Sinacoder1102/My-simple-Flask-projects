@@ -28,26 +28,49 @@ def red_to_login():
 def login():
     return render_template("loginform.html")
 
-@app.route("/register" , methods=["POST"])
+@app.route("/register")
 def register():
     return render_template("registerform.html")
 
 @app.route("/savinginfs",methods=["POST"])
 def saving_informations():
     try:
-        username = request.form.get("username")
-        password = request.form.get("password")
-        userid = request.form.get("userid")
+        username = request.form.get("username","").strip()
+        password = request.form.get("password","").strip()
+        userid = request.form.get("userid","").strip()
 
-        session["username"] = username
-        session["userid"] = userid
-
-        session.permanent = True
-
-        secpassword = generate_password_hash(password)
 
         conn = connection()
         postcur = conn.cursor()
+
+        if not username or not password or not userid :
+            flash("The informations required")
+            return redirect(url_for("register"))
+
+        if len(username) < 3 :
+            flash("The username must be at least 3 characters")
+            return redirect(url_for("register"))
+        
+        if len(username) > 20 :
+            flash("The username mustn't be more than 20 characters")
+            return redirect(url_for("register"))
+        
+        if len(password) < 8 :
+            flash("The password must be atleast 8 characters")
+            return redirect(url_for("register"))
+        
+        secpassword = generate_password_hash(password)
+
+        postcur.execute(
+            "SELECT 1 FROM siteusers WHERE username = %s",
+            (username,)
+        )
+
+        if postcur.fetchone():
+            flash("Username already exists")
+            postcur.close()
+            conn.close()
+            return redirect(url_for("register")) 
 
         postcur.execute(
             "INSERT INTO siteusers(username,password,userid) VALUES(%s,%s,%s)",
@@ -62,6 +85,7 @@ def saving_informations():
     
     except Exception as ex:
         return f"Ops!!!!!!! : {ex}"
+
     
 @app.route("/welcomeback",methods=["POST"])
 def saywelcomeback():

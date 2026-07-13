@@ -8,13 +8,6 @@
 </head>
 <body>
 <div class="card">
-    {% with messages = get_flashed_messages() %}
-    {% if messages %}
-        {% for message in messages %}
-            <p>{{ message }}</p>
-        {% endfor %}
-    {% endif %}
-    {% endwith %}
     <form action="/welcomeback" method="post">
         <input type="text" name="username" placeholder="Username">
         <input type="password" name="password" placeholder="Password">
@@ -24,7 +17,7 @@
         </button>
     </form>
 
-    <form action="/register" method="post" class="register">
+    <form action="/register" method="get" class="register">
         <h4>Don't you have an account?</h4>
 
         <button type="submit">
