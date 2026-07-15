@@ -1,4 +1,5 @@
 # Importing models
+from curses.ascii import isdigit
 import re
 from flask import Flask,request,redirect,render_template, session,url_for,flash
 import psycopg
@@ -208,10 +209,46 @@ def updateprof():
     if "username" not in session:
         return redirect(url_for("login"))
     
-    new_username = request.form.get("username")
+    new_username = request.form.get("username" , "").strip()
+
+    if not new_username:
+        flash("The new username is empty?")
+        return redirect(url_for("editprof"))
+    
+    if len(new_username) < 3 :
+        flash("The username must atleast contains 3 characters")
+        return redirect(url_for("editprof"))
+
+    if len(new_username) > 20 :
+        flash("The username must not be more than 20 characters")
+        return redirect(url_for("editprof"))
+
+    if not re.fullmatch(r"[A-Za-z0-9_]+" , new_username):
+        flash("The username must atleast contain letter,number and _")
+        return redirect(url_for("editprof"))
+    
+    if new_username[0].isdigit():
+        flash("The username can not start with numbers!")
+        return redirect(url_for("editprof"))
     
     conn = connection()
     postcursor = conn.cursor()
+
+    postcursor.execute(
+    """
+    SELECT 1
+    FROM siteusers
+    WHERE username = %s
+    AND userid != %s
+    """,
+    (new_username, session["userid"])
+    )
+
+    if postcursor.fetchone():
+        flash("Username already exists.")
+        postcursor.close()
+        conn.close()
+        return redirect(url_for("editprof"))
 
     postcursor.execute(
         """UPDATE siteusers
