@@ -60,12 +60,40 @@ def saving_informations():
             flash("The username mustn't be more than 20 characters")
             return redirect(url_for("register"))
         
-        if not re.fullmatch(r"[A-Za-Z0--9_]+" , username):
+        if not re.fullmatch(r"[A-Za-z0-9_]+" , username):
             flash("Username only contains letter,numbers and _")
+            return redirect(url_for("register"))
+
+        if username[0].isdigit():
+            flash("The username can not start with numbers")
             return redirect(url_for("register"))
         
         if len(password) < 8 :
             flash("The password must be atleast 8 characters")
+            return redirect(url_for("register"))
+
+        if not re.search(r"[A-Z]" , password):
+            flash("The password must contain atleast one uppercase letter")
+            return redirect(url_for("register"))
+        
+        if not re.search(r"[a-z]" , password):
+            flash("The password must contain atleast one lowercase letter")
+            return redirect(url_for("register"))
+        
+        if not re.search(r"\d" , password):
+            flash("The password must atleast contain one number")
+            return redirect(url_for("register"))
+        
+        if not re.search(r"[!@#$%^&*(),.?\":{}|<>]" , password):
+            flash("The password must contain atleast one special character")
+            return redirect(url_for("register"))
+        
+        if not userid.isdigit():
+            flash("The userid must be integer")
+            return redirect(url_for("register"))
+        
+        if int(userid) <= 0:
+            flash("The userid must be greater than 0!")
             return redirect(url_for("register"))
         
         secpassword = generate_password_hash(password)
@@ -80,6 +108,15 @@ def saving_informations():
             postcur.close()
             conn.close()
             return redirect(url_for("register")) 
+        
+        postcur.execute(
+            "SELECT 1 FROM siteusers WHERE userid = %s",
+            (userid,)        
+            )
+        
+        if postcur.fetchone():
+            flash("The userid is already exists")
+            return redirect(url_for("register"))       
 
         postcur.execute(
             "INSERT INTO siteusers(username,password,userid) VALUES(%s,%s,%s)",

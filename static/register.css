@@ -136,9 +136,18 @@ button:active{
 
 }
 
-.flash{
-    color:#ff4d4d;
-    text-align:center;
+.flash-message{
+    width:100%;
+    box-sizing:border-box;
+    padding:12px;
     margin-bottom:15px;
+
+    background:#ffe5e5;
+    border:1px solid #ff4d4d;
+    border-radius:8px;
+
+    color:#b30000;
+    font-size:15px;
     font-weight:bold;
+    text-align:center;
 }
