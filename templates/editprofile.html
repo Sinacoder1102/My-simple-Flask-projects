@@ -9,6 +9,8 @@
 
 <form action="/updateprofile" method="POST">
 
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
     <label>New Username</label>
     <input
         type="text"

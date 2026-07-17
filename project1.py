@@ -1,4 +1,7 @@
 # Importing models
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from flask_wtf.csrf import CSRFProtect
 from curses.ascii import isdigit
 import re
 from flask import Flask,request,redirect,render_template, session,url_for,flash
@@ -10,6 +13,11 @@ from werkzeug.security import generate_password_hash,check_password_hash
 app = Flask(__name__)
 app.secret_key = "Sinasecret123"
 app.permanent_session_lifetime = timedelta(minutes=2)
+csrf = CSRFProtect(app)
+limiter = Limiter(
+    key_func=get_remote_address,
+    app=app
+)
 
 # Connecting to postgres
 def connection():
@@ -135,6 +143,7 @@ def saving_informations():
 
     
 @app.route("/welcomeback",methods=["POST"])
+@limiter.limit("5 per minute")
 def saywelcomeback():
     username = request.form.get("username")
     password = request.form.get("password")
@@ -164,7 +173,8 @@ def saywelcomeback():
 
         return redirect(url_for("dashboard"))
     else:
-        return "<h1>Wrong password!!!!</h1>"
+        flash("Wrong password!")
+        return redirect(url_for("login"))
     
 @app.route("/dashboard")
 def dashboard():
@@ -273,48 +283,76 @@ def changepassword():
 
     return render_template("changepass.html")
 
-
-@app.route("/updatepassword" , methods=["POST"])
+@app.route("/updatepassword", methods=["POST"])
 def updatepass():
     if "username" not in session:
         return redirect(url_for("login"))
 
-    new_pass = request.form.get("newpassword")
-    old_pass = request.form.get("oldpassword")
+    new_pass = request.form.get("newpassword", "").strip()
+    old_pass = request.form.get("oldpassword", "").strip()
 
-    conn = connection()
-    cur2 = conn.cursor()
+    with connection() as conn:
+        with conn.cursor() as cur2:
 
-    cur2.execute(
-        "SELECT password FROM siteusers WHERE userid = %s",
-        (session["userid"],)
-    )
+            cur2.execute(
+                "SELECT password FROM siteusers WHERE userid = %s",
+                (session["userid"],)
+            )
 
-    user = cur2.fetchone()
+            user = cur2.fetchone()
 
-    db_password = user[0]
-    
-    if check_password_hash(db_password,old_pass):
-       new_hashed_password = generate_password_hash(new_pass)
-       cur2.execute(
-           """
-           UPDATE siteusers
-           SET password = %s
-           WHERE userid = %s
-           """,
-           (new_hashed_password,session["userid"])
-       ) 
+            if user is None:
+                flash("User not found!")
+                return redirect(url_for("login"))
 
-       conn.commit()
-       cur2.close()
-       conn.close()
+            db_password = user[0]
 
-       return redirect(url_for("showprof"))
-    
-    else:
-        cur2.close()
-        conn.close()
-        return "Current password is incorrect!"
+            if not old_pass or not new_pass:
+                flash("One of the password fields is empty!")
+                return redirect(url_for("changepassword"))
+
+            if len(new_pass) < 8:
+                flash("The password must contain at least 8 characters.")
+                return redirect(url_for("changepassword"))
+
+            if not re.search(r"[A-Z]", new_pass):
+                flash("The password must contain at least one uppercase letter.")
+                return redirect(url_for("changepassword"))
+
+            if not re.search(r"[a-z]", new_pass):
+                flash("The password must contain at least one lowercase letter.")
+                return redirect(url_for("changepassword"))
+
+            if not re.search(r"\d", new_pass):
+                flash("The password must contain at least one number.")
+                return redirect(url_for("changepassword"))
+
+            if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", new_pass):
+                flash("The password must contain at least one special character.")
+                return redirect(url_for("changepassword"))
+
+            if new_pass == old_pass:
+                flash("The new password must be different from the current password.")
+                return redirect(url_for("changepassword"))
+
+            if check_password_hash(db_password, old_pass):
+                new_hashed_password = generate_password_hash(new_pass)
+
+                cur2.execute(
+                    """
+                    UPDATE siteusers
+                    SET password = %s
+                    WHERE userid = %s
+                    """,
+                    (new_hashed_password, session["userid"])
+                )
+
+                conn.commit()
+                flash("Password updated successfully!")
+                return redirect(url_for("showprof"))
+
+            flash("Current password is incorrect!")
+            return redirect(url_for("changepassword"))
     
 @app.route("/deleteaccount" , methods=["POST"])
 def deleteaccount():

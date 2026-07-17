@@ -9,6 +9,7 @@
 <body>
 <div class="card">
     <form action="/welcomeback" method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <input type="text" name="username" placeholder="Username">
         <input type="password" name="password" placeholder="Password">
 
