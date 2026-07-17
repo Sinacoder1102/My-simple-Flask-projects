@@ -1,4 +1,6 @@
 # Importing models
+import os
+from dotenv import load_dotenv
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_wtf.csrf import CSRFProtect
@@ -10,8 +12,9 @@ from datetime import timedelta
 from werkzeug.security import generate_password_hash,check_password_hash
 
 # Doing initial settings
+load_dotenv()
 app = Flask(__name__)
-app.secret_key = "Sinasecret123"
+app.secret_key = os.getenv("SECRET_KEY")
 app.permanent_session_lifetime = timedelta(minutes=2)
 csrf = CSRFProtect(app)
 limiter = Limiter(
@@ -22,11 +25,11 @@ limiter = Limiter(
 # Connecting to postgres
 def connection():
     return psycopg.connect(
-        host="localhost",
-        dbname="postgres",
-        user="postgres",
-        password="21200",
-        port=5432
+        host=os.getenv("DB_HOST"),
+        dbname=os.getenv("DB_NAME"),
+        user=os.getenv("DB_USER"),
+        password=os.getenve("DB_PASSWORD"),
+        port=os.getenv("DB_PORT")
     )
 
 # Main route
