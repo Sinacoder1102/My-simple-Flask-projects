@@ -43,7 +43,7 @@ def added_user():
 def findusers():
     username = request.form.get("username" , "").strip()
 
-    chosenuser = User.query.filter_by(username = username).all()
+    chosenuser = User.query.filter_by(username = username).first()
 
     if chosenuser:
         return f"<h1>{chosenuser.username}</h1>"
@@ -58,3 +58,41 @@ def show_users():
         print(user.id , user.username)
 
     return "Done!"
+
+@app.route("/results")
+def showeverything():
+    user = User.query.all()
+    for u in user:
+        print(u.id , u.username)
+
+    firstuser = User.query.first()
+    if firstuser:
+        print(firstuser.username)
+
+    Aliuser = User.query.filter_by(username = "Ali").all()
+    for al in Aliuser:
+        print(al.username)
+
+    userid = User.query.order_by(User.id).all()
+
+    countuser = User.query.count()
+    print(countuser)
+
+    A_start = User.query.filter(User.username.startswith("A")).all()
+    for use in A_start:
+        print(use.username)
+
+    return "Done Done!"
+
+@app.route("/updateusername" , methods=["POST"])
+def updateuser():
+    old_username = request.form.get("oldusername")
+    new_username = request.form.get("newusername")
+
+    user = User.query.filter_by(username = old_username).first()
+
+    if user:
+        user.username = new_username
+        db.session.commit()
+
+    return "updating done"
