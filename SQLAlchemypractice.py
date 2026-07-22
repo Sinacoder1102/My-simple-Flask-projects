@@ -96,3 +96,24 @@ def updateuser():
         db.session.commit()
 
     return "updating done"
+
+@app.route("/deleteuser" , methods=["POST"])
+def deletinguser():
+    getuser = request.form.get("deleteduser" , "").strip()
+
+    print("Input : " , getuser)
+    
+    deleted_user = User.query.filter_by(username = getuser).first()
+
+    print("Found! : " , deleted_user)
+
+    if deleted_user:
+        db.session.delete(deleted_user)
+        db.session.commit()
+        return "User deleted successfully!"
+    
+    elif not getuser:
+        return "The user is required!"
+    
+    else:
+        return "<h1>Sorry! User not found!</h1>"
