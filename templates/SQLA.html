@@ -3,44 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Adding users!</title>
+    <title>SQLAlchemy Practice</title>
 </head>
 <body>
-    <form action="/added" method="post">
+
+    <h2>Add User</h2>
+    <form action="/added" method="POST">
         <input type="text" name="username" placeholder="Username">
-        <button type="submit">
-            Click here to add users
-        </button>
+        <button type="submit">Add User</button>
+    </form>
+
+    <hr>
+
+    <h2>Find User</h2>
+    <form action="/find" method="POST">
+        <input type="text" name="username" placeholder="Username">
+        <button type="submit">Find User</button>
+    </form>
+
+    <hr>
+
+    <h2>Update User</h2>
+    <form action="/updateusername" method="POST">
+        <input type="text" name="oldusername" placeholder="Current Username">
+        <input type="text" name="newusername" placeholder="New Username">
+        <button type="submit">Update User</button>
+    </form>
+
+    <hr>
+
+    <h2>Delete User</h2>
+    <form action="/deleteuser" method="POST">
+        <input type="text" name="deleteduser" placeholder="Username">
+        <button type="submit">Delete User</button>
+    </form>
+
+    <hr>
+
+    <h2>Queries</h2>
+
+    <form action="/users" method="GET">
+        <button type="submit">Show All Users</button>
     </form>
 
     <br>
 
-    <form action="/find" method="post">
-        <input type="text" name="username" placeholder="Finduser">
-        <button type="submit">
-            Click here to find users which you want!
-        </button>
+    <form action="/results" method="GET">
+        <button type="submit">Run Query Examples</button>
     </form>
 
-    <br>
-
-    <form action="/updateusername" method="post">
-        <input type="text" name="oldusername" placeholder="Current username">
-        <input type="text" name="newusername" placeholder="New username">
-
-        <button type="submit">
-            Click to save infs!
-        </button>
-    </form>
-
-    <br>
-
-    <form action="/deleteuser" method="post">
-        <input type="text" name="deleteduser" placeholder="Which user do you want to delete?">
-
-        <button type="submit">
-            Click here to delete user!
-        </button>
-    </form>
 </body>
 </html>

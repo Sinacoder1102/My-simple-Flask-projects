@@ -11,6 +11,17 @@ class User(db.Model):
     id = db.Column(db.Integer , primary_key = True)
     username = db.Column(db.String(100) , nullable = False)
 
+    posts = db.relationship("Post" , backref = "user" , lazy = True)
+
+class Post(db.Model):
+    id = db.Column(db.Integer , primary_key = True)
+    title = db.Column(db.String(100) , nullable = False)
+
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey("user.id")
+    )
+
 with app.app_context():
     db.create_all()
 
@@ -117,3 +128,12 @@ def deletinguser():
     
     else:
         return "<h1>Sorry! User not found!</h1>"
+    
+@app.route("/biggerthan2")
+def ifbigger():
+    biggerthan2 = User.query.filter(User.id > 2).all()
+
+    for user in biggerthan2 :
+        print(user.id , user.username)
+
+    return "Done!"
