@@ -25,6 +25,27 @@ class Post(db.Model):
 with app.app_context():
     db.create_all()
 
+    user = User(username = "Ali")
+    db.session.add(user)
+    db.session.commit()
+
+    post = Post(
+        title = "This is my first post!",
+        user = user
+    )
+    db.session.add(post)
+    db.session.commit()
+
+    print(post.user)
+    for p in user.posts:
+            print(p.title)
+
+    user2 = User(username = "Sara")
+    db.session.add(user2)
+    db.session.commit()
+
+    print(user2.posts)
+
 @app.route("/")
 def index():
     return redirect(url_for("addusers"))
