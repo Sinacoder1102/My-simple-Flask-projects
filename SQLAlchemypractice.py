@@ -105,7 +105,21 @@ def showusers():
 
     return f"<h2>You can see users in this tab -------> {usernames}</h2>"
     
+@app.route("/addposts" , methods=["POST"])
+def add_user_post():
+    username = request.form.get("username")
+    post = request.form.get("post")
 
+    if username:
+        user = User.query.filter_by(username = username).first()
+        new_post = Post(user = user , title = post)
 
+        db.session.add(new_post)
+        db.session.commit()
+        return "Post created successfully!"
     
+
+
+
+
     
