@@ -1,4 +1,4 @@
-from flask import Flask,render_template,request,redirect,url_for
+from flask import Flask,redirect,render_template, request, url_for
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
@@ -11,150 +11,101 @@ class User(db.Model):
     id = db.Column(db.Integer , primary_key = True)
     username = db.Column(db.String(100) , nullable = False)
 
-    posts = db.relationship("Post" , backref = "user" , lazy = True)
+    posts = db.relationship("Post" , back_populates = "user")
 
 class Post(db.Model):
     id = db.Column(db.Integer , primary_key = True)
-    title = db.Column(db.String(100) , nullable = False)
+    title = db.Column(db.String(500))
 
     user_id = db.Column(
         db.Integer,
         db.ForeignKey("user.id")
     )
 
+    user = db.relationship(
+        "User",
+        back_populates = "posts"
+    )
+
 with app.app_context():
     db.create_all()
 
-    user = User(username = "Ali")
-    db.session.add(user)
-    db.session.commit()
 
-    post = Post(
-        title = "This is my first post!",
-        user = user
-    )
-    db.session.add(post)
-    db.session.commit()
-
-    print(post.user)
-    for p in user.posts:
-            print(p.title)
-
-    user2 = User(username = "Sara")
-    db.session.add(user2)
-    db.session.commit()
-
-    print(user2.posts)
 
 @app.route("/")
-def index():
-    return redirect(url_for("addusers"))
+def redirecting():
+    return redirect(url_for("addingform"))
 
-@app.route("/addyourself")
-def addusers():
+@app.route("/form")
+def addingform():
     return render_template("SQLA.html")
 
-
 @app.route("/added" , methods=["POST"])
-def added_user():
-
+def addeduser():
     username = request.form.get("username" , "").strip()
 
-    if not username:
-        return "The username required!"
-    
-    user = User(username = username)
+    if username:
+        user = User(username = username)
 
-    db.session.add(user)
-    db.session.commit()
-
-    return "Opration done successfully!"
- 
+        db.session.add(user)
+        db.session.commit()
+        return "Adding user Done!"
 
 @app.route("/find" , methods=["POST"])
-def findusers():
-    username = request.form.get("username" , "").strip()
+def find():
+    founduser = request.form.get("username" , "").strip()
 
-    chosenuser = User.query.filter_by(username = username).first()
+    querying = User.query.filter_by(username = founduser).all()
 
-    if chosenuser:
-        return f"<h1>{chosenuser.username}</h1>"
-    else:
+    if querying:
+        for i in querying:
+            return f"The users with this infs : {i.id , i.username}"
+
+@app.route("/updateusername", methods=["POST"])
+def updateuser():
+    old_user = request.form.get("oldusername", "").strip()
+    new_user = request.form.get("newusername", "").strip()
+
+    if old_user and new_user:
+        user = User.query.filter_by(username=old_user).first()
+
+        if user:
+            user.username = new_user
+            db.session.commit()
+            return "User updated successfully!"
+
         return "User not found!"
 
-@app.route("/users")
-def show_users():
-    users = User.query.all()
+    return "Please enter both usernames!"
 
-    for user in users:
-        print(user.id , user.username)
+@app.route("/deleteuser", methods=["POST"])
+def delete_user():
+    username = request.form.get("deleteuser", "").strip()
 
-    return "Done!"
+    if username:
+        user = User.query.filter_by(username=username).first()
 
-@app.route("/results")
-def showeverything():
-    user = User.query.all()
-    for u in user:
-        print(u.id , u.username)
+        if user:
+            db.session.delete(user)
+            db.session.commit()
+            return "User deleted successfully!"
 
-    firstuser = User.query.first()
-    if firstuser:
-        print(firstuser.username)
+        return "User not found!"
 
-    Aliuser = User.query.filter_by(username = "Ali").all()
-    for al in Aliuser:
-        print(al.username)
+    return "Please enter a username!"
 
-    userid = User.query.order_by(User.id).all()
+@app.route("/users" , methods=["GET"])
+def showusers():
+    allusers = User.query.all()
 
-    countuser = User.query.count()
-    print(countuser)
+    usernames = []
 
-    A_start = User.query.filter(User.username.startswith("A")).all()
-    for use in A_start:
-        print(use.username)
+    for user in allusers:
+        usernames.append(user.username)
 
-    return "Done Done!"
-
-@app.route("/updateusername" , methods=["POST"])
-def updateuser():
-    old_username = request.form.get("oldusername")
-    new_username = request.form.get("newusername")
-
-    user = User.query.filter_by(username = old_username).first()
-
-    if user:
-        user.username = new_username
-        db.session.commit()
-
-    return "updating done"
-
-@app.route("/deleteuser" , methods=["POST"])
-def deletinguser():
-    getuser = request.form.get("deleteduser" , "").strip()
-
-    print("Input : " , getuser)
+    return f"<h2>You can see users in this tab -------> {usernames}</h2>"
     
-    deleted_user = User.query.filter_by(username = getuser).first()
 
-    print("Found! : " , deleted_user)
 
-    if deleted_user:
-        db.session.delete(deleted_user)
-        db.session.commit()
-        return "User deleted successfully!"
     
-    elif not getuser:
-        return "The user is required!"
     
-    else:
-        return "<h1>Sorry! User not found!</h1>"
-    
-@app.route("/biggerthan2")
-def ifbigger():
-    biggerthan2 = User.query.filter(User.id > 2).all()
-
-    for user in biggerthan2 :
-        print(user.id , user.username)
-
-    return "Done!"
