@@ -1,5 +1,6 @@
 from flask import Flask,redirect,render_template, request, url_for
 from flask_sqlalchemy import SQLAlchemy
+from psutil import users
 from sqlalchemy import or_
 
 app = Flask(__name__)
@@ -142,3 +143,15 @@ def ordering():
         result.append(user.username)
 
     return "<br>".join(result)
+
+@app.route("/showrecords")
+def showrecords():
+    user = User.query.order_by(User.username).offset(1).limit(9).all()
+
+    if user:
+        result = []
+
+        for i in user:
+            result.append(i.username)
+
+        return "<br>".join(result)
