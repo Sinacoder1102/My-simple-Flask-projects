@@ -1,5 +1,6 @@
 from flask import Flask,redirect,render_template, request, url_for
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import or_
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
@@ -55,7 +56,7 @@ def addeduser():
 def find():
     founduser = request.form.get("username" , "").strip()
 
-    querying = User.query.filter_by(username = founduser).all()
+    querying = User.query.filter_by(username = founduser).first()
 
     if querying:
         for i in querying:
@@ -119,7 +120,25 @@ def add_user_post():
         return "Post created successfully!"
     
 
+@app.route("/myposts" , methods=["POST"])
+def see_posts():
+    user_informations = request.form.get("userposts")
+
+    user = User.query.filter_by(username = user_informations).first()
+
+    if user:
+        for post in user.posts:
+            print(post.title)
+        return "See posts from the terminal!"
 
 
+@app.route("/orderedusers")
+def ordering():
+    users = User.query.order_by(User.username).all()
 
-    
+    result = []
+
+    for user in users:
+        result.append(user.username)
+
+    return "<br>".join(result)
