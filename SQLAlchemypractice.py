@@ -1,6 +1,5 @@
 from flask import Flask,redirect,render_template, request, url_for
 from flask_sqlalchemy import SQLAlchemy
-from psutil import users
 from sqlalchemy import or_
 
 app = Flask(__name__)
