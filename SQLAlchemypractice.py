@@ -155,3 +155,11 @@ def showrecords():
             result.append(i.username)
 
         return "<br>".join(result)
+
+@app.route("/agfuncs")
+def show_agfuncs():
+    user_count = User.query.count()
+
+    print(user_count)
+
+    return "EDone"
