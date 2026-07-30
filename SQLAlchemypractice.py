@@ -1,6 +1,6 @@
 from flask import Flask,redirect,render_template, request, url_for
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import or_
+from sqlalchemy import or_,and_
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
@@ -162,3 +162,62 @@ def show_agfuncs():
     print(user_count)
 
     return "EDone"
+
+@app.route("/andor")
+def test():
+    or_user = User.query.filter(
+        or_(
+            User.username == "Ali",
+            User.id > 3
+        )
+    ).all()
+
+    and_user = User.query.filter(
+        and_(
+            User.username != "Akbar",
+            User.id > 5
+        )
+    ).all()
+
+
+    or_user_list = []
+
+    and_user_list = []
+
+
+    if or_user:
+        for p in or_user:
+            or_user_list.append(p.username)
+
+        # return f"{or_user_list}"
+
+    if and_user:
+        for l in and_user:
+            and_user_list.append(l.username)
+
+        return f"{and_user_list} <br> {or_user_list}"
+
+
+@app.route("/intest")
+def intest():
+    user = User.query.filter(
+        User.username.in_(["mammad4" , "Zohreh454" , "Saba230"])
+    ).all()
+
+    users = []
+
+    if user:
+        for i in user:
+            users.append(i.id)
+        return f"Hello man ------>  {users}"
+
+@app.route("/join")
+def join():
+    posts = db.session.query(Post).join(User).filter(User.username == "Ali").all()
+
+    aliposts = []
+
+    if posts:
+        for u in posts:
+            print(u.title)
+        return "Howwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww"
