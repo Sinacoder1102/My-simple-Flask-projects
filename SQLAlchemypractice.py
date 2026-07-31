@@ -1,6 +1,6 @@
 from flask import Flask,redirect,render_template, request, url_for
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import or_,and_
+from sqlalchemy import or_,and_,func
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
@@ -221,3 +221,44 @@ def join():
         for u in posts:
             print(u.title)
         return "Howwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww"
+
+
+@app.route("/statistics")
+def statics():
+    count_user = db.session.query(
+        func.count(User.id)
+    ).scalar()
+
+    max_user = db.session.query(
+        func.max(User.id)
+    ).scalar()
+
+    min_user = db.session.query(
+        func.min(User.id)
+    ).scalar()
+
+    avg_user = db.session.query(
+        func.avg(User.id)
+    ).scalar()
+
+    sum_user = db.session.query(
+        func.sum(User.id)
+    ).scalar()
+
+    return f"<h3>counting users = {count_user} , max user's id = {max_user} , minimum user's id = {min_user} , average = {avg_user} , sum of users = {sum_user} !</h3>"
+
+
+@app.route("/groupby")
+def grouping():
+    users = db.session.query(
+        User.username,
+        func.count(Post.id),
+    ).join(Post).group_by(User.id).all()
+
+    outing = []
+
+    if users:
+        for username,count in users:
+            outing.append(f"{username} -> {count} posts")
+        return "<br>".join(outing)
+    
