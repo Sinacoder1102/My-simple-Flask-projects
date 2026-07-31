@@ -261,4 +261,28 @@ def grouping():
         for username,count in users:
             outing.append(f"{username} -> {count} posts")
         return "<br>".join(outing)
+
+@app.route("/having")
+def haveit():
+    having = db.session.query(
+        User.username,
+        func.count(Post.id),
+    ).join(Post).group_by(User.id).having(func.count(Post.id) > 1).all()
+
+@app.route("/subquery")
+def subquery():
+    subquery1 = db.session.query(
+        Post.user_id
+    )
+
+    users = User.query.filter(
+        User.id.in_(subquery1)
+    ).all()
+
     
+
+
+
+
+
+
