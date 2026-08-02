@@ -1,6 +1,7 @@
 from flask import Flask,redirect,render_template, request, url_for
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import or_,and_,func
+from sqlalchemy.orm import aliased
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
@@ -27,6 +28,12 @@ class Post(db.Model):
         "User",
         back_populates = "posts"
     )
+
+class Employee(db.Model):
+    id = db.Column(db.Integer , primary_key = True)
+    name = db.Column(db.String(100) , nullable = False)
+    manager_id = db.Column(db.Integer , db.ForeignKey("employee.id"))
+
 
 with app.app_context():
     db.create_all()
@@ -280,6 +287,19 @@ def subquery():
     ).all()
 
     
+
+@app.route("/manager")
+def manager():
+    
+    Manager = aliased(Employee)
+
+    employees = db.session.query(
+        Employee.name,
+        Manager.name
+    ).join(Manager , Employee.manager_id == Manager.id).all()
+
+    
+
 
 
 
