@@ -290,13 +290,22 @@ def subquery():
 
 @app.route("/manager")
 def manager():
-    
+
     Manager = aliased(Employee)
 
     employees = db.session.query(
         Employee.name,
         Manager.name
     ).join(Manager , Employee.manager_id == Manager.id).all()
+
+    result = []
+
+    for username , user_manager in employees:
+        return f"{username} ---->  {user_manager}"
+
+    return "<br>".join(result)
+
+
 
     
 
