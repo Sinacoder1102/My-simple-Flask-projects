@@ -1,6 +1,6 @@
 from flask import Flask,redirect,render_template, request, url_for
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import or_,and_,func
+from sqlalchemy import or_,and_,func,exists
 from sqlalchemy.orm import aliased
 
 app = Flask(__name__)
@@ -9,7 +9,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
 
-class User(db.Model):
+class User(db.Model): 
     id = db.Column(db.Integer , primary_key = True)
     username = db.Column(db.String(100) , nullable = False)
 
@@ -305,13 +305,38 @@ def manager():
 
     return "<br>".join(result)
 
+@app.route("/outerjoin")
+def outerjoin():
+    users = db.session.query(
+        User.username,
+        Post.title
+    ).outerjoin(Post).all()
 
+    for username , post in users:
+        print(username , post)
 
-    
+    return "Done bro"
 
+# @app.route("/thisismyend")
+# def disid():
+#     user = db.session.query(
+#         exists().where(User.username == "ALi")
+#     ).scalar()
 
+@app.route("/union")
+def unioning():
+    query1 = db.session.query(
+        User.username
+    ).filter(User.username.contains("Ali"))
 
+    query2 = db.session.query(
+        User.username
+    ).filter(User.id < 3)
 
+    result = query1.union(query2).all()
 
+    for i in result:
+        print(i.username)
 
+    return "Done successfully!"
 
