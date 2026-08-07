@@ -1,5 +1,6 @@
 from flask import Flask,render_template,redirect,request,url_for
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import selectinload
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///maindata.db"
@@ -56,8 +57,11 @@ def find_user():
     if find1:
         found_user = User.query.filter_by(username = find1).first()
 
-        return f"{found_user.username} -----> {found_user.id}"
+        if found_user:
+            return f"{found_user.username} -----> {found_user.id}"
 
+        return "User said no!"
+    
     return "User not found!"
 
 @app.route("/updateusername" , methods=["POST"])
@@ -93,6 +97,95 @@ def deleteing():
         return "User not found!"
 
     return "I really don't know what should I say"
+
+
+@app.route("/showall" , methods=["POST"])
+def show_all_users():
+    all_users = User.query.all()
+
+    username_list= []
+
+    user_id = []
+
+    if all_users:
+        for usernames in all_users:
+            username_list.append(usernames.username)
+
+        for userid in all_users:
+            user_id.append(userid.id)
+
+        return f"The users ----> {username_list} , ---------> The users' id ----> {user_id}"
+
+    return "No user!"
+
+@app.route("/addposts" , methods=["POST"])
+def add_post():
+    post_owner = request.form.get("username")
+    post_title = request.form.get("post")
+
+    if post_owner and post_title:
+        user = User.query.filter_by(
+            username = post_owner
+        ).first()
+
+        if user:
+            new_post = Post(
+                title = post_title,
+                user = user
+            )
+
+            db.session.add(new_post)
+            db.session.commit()
+
+            return "Post uploaded successfully!"
+
+        return "Post not found!"
+    
+    return "Ops! problem in one of values!"
+
+@app.route("/myposts" , methods=["POST"])
+def show_user_posts():
+    userinf = request.form.get("userposts")
+
+    if userinf:
+        user = User.query.filter_by(username = userinf).first()
+
+        if user:
+            results = []
+
+            for post in user.posts:
+                results.append(post.title)
+
+            return f"{user.username} ------> {results}"
+
+        return "User not found!"
+
+    return "ops!"
+
+@app.route("/fullinformation" , methods=["POST"])
+def fullinfs():
+    username = request.form.get("username")
+
+    if username:
+        user_selection = User.query.options(
+            selectinload(User.posts)
+        ).filter_by(username = username).first()
+
+        if user_selection:
+            posts = []
+
+            for post in user_selection.posts:
+                posts.append(post.title)
+
+            return f"{user_selection.username} --------> {posts}"
+
+        return "Ops! : User selectionloading faild!"
+
+    return "Ops! : User not found!"
+
+
+
+
 
 
 
