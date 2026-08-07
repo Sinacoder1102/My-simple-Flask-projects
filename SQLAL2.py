@@ -1,6 +1,6 @@
 from flask import Flask,render_template,redirect,request,url_for
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload 
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///maindata.db"
@@ -14,7 +14,8 @@ class User(db.Model):
 
     posts = db.relationship(
         "Post",
-        back_populates = "user"
+        back_populates = "user",
+        cascade = "all, delete-orphan"
     )
 
 class Post(db.Model):
@@ -24,7 +25,8 @@ class Post(db.Model):
 
     user = db.relationship(
         "User",
-        back_populates = "posts"
+        back_populates = "posts",
+        
     )
 
 with app.app_context():
