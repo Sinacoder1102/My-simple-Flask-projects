@@ -122,27 +122,40 @@ def show_all_users():
 
 @app.route("/addposts" , methods=["POST"])
 def add_post():
+
     post_owner = request.form.get("username")
     post_title = request.form.get("post")
 
     if post_owner and post_title:
-        user = User.query.filter_by(
-            username = post_owner
-        ).first()
 
-        if user:
-            new_post = Post(
-                title = post_title,
-                user = user
-            )
+        try:
+            user = User.query.filter_by(
+                username=post_owner
+            ).first()
 
-            db.session.add(new_post)
-            db.session.commit()
+            if user:
 
-            return "Post uploaded successfully!"
+                new_post = Post(
+                    title=post_title,
+                    user=user
+                )
 
-        return "Post not found!"
-    
+                db.session.add(new_post)
+
+                raise Exception("Something went wrong!")
+
+                db.session.commit()
+
+                return "Post uploaded successfully!"
+
+            return "User not found!"
+
+        except Exception as e:
+
+            db.session.rollback()
+
+            return f"Error happened: {e}"
+
     return "Ops! problem in one of values!"
 
 @app.route("/myposts" , methods=["POST"])
@@ -184,10 +197,4 @@ def fullinfs():
         return "Ops! : User selectionloading faild!"
 
     return "Ops! : User not found!"
-
-
-
-
-
-
 
