@@ -233,5 +233,18 @@ def show_paginate():
 @app.route("/test404")
 def make_error():
     abort(404)
+@app.errorhandler(404)
+def handle_error(error):
+    return render_template("404.html"),404
 
-    
+@app.route("/admin")
+def admin():
+    abort(403)
+@app.errorhandler(403)
+def answer_to_403(error):
+    return "<h1>403</h1> <h2>This is 403 error!</h2>"
+
+
+
+
+
