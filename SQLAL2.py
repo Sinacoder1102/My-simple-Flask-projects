@@ -1,4 +1,4 @@
-from flask import Flask,render_template,redirect,request,url_for
+from flask import Flask,render_template,redirect,request,url_for,abort
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import selectinload 
 
@@ -142,7 +142,7 @@ def add_post():
 
                 db.session.add(new_post)
 
-                raise Exception("Something went wrong!")
+                # raise Exception("Something went wrong!")
 
                 db.session.commit()
 
@@ -163,7 +163,9 @@ def show_user_posts():
     userinf = request.form.get("userposts")
 
     if userinf:
-        user = User.query.filter_by(username = userinf).first()
+        user = User.query.options(
+            selectinload(User.posts)
+        ).filter_by(username = userinf).first()
 
         if user:
             results = []
@@ -198,3 +200,38 @@ def fullinfs():
 
     return "Ops! : User not found!"
 
+@app.route("/paginate" , methods=["POST"])
+def show_paginate():
+
+    pager = request.form.get("pagenumber" , type=int)
+
+    user_paginate = User.query.paginate(
+        page=pager,
+        per_page=4
+    )
+
+    users = []
+
+    for user in user_paginate.items:
+        users.append(user.username)
+
+    users_1 = []
+
+    users_2 = []
+
+    for usernames in user_paginate.next().items:
+        users_1.append(usernames.username)
+
+    for user_names in user_paginate.prev().items:
+        users_2.append(user_names.username)
+
+    
+
+    return f"{users} <br> {users_1} <br> {users_2}"
+
+
+@app.route("/test404")
+def make_error():
+    abort(404)
+
+    
