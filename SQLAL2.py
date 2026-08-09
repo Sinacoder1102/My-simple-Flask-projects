@@ -5,12 +5,12 @@ from sqlalchemy.orm import selectinload
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///maindata.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-
 db = SQLAlchemy(app)
 
 class User(db.Model):
     id = db.Column(db.Integer , primary_key = True)
     username = db.Column(db.String(200) , nullable = False)
+    role = db.Column(db.String(20) , default = "user")
 
     posts = db.relationship(
         "Post",
@@ -243,6 +243,15 @@ def admin():
 @app.errorhandler(403)
 def answer_to_403(error):
     return "<h1>403</h1> <h2>This is 403 error!</h2>"
+
+# دیباگر باید خاموش باشه تا نتیجه نمایش داده بشه
+@app.route("/test500")
+def make_500_error():
+    x = 10 / 0
+    return "Division done!"
+@app.errorhandler(500)
+def handle_500(error):
+    return "Error! : division by 0 is impossible!" , 500
 
 
 
