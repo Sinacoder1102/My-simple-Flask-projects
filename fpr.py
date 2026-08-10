@@ -1,56 +1,55 @@
-from os import abort
-
 from flask import Flask,request,render_template,redirect,url_for
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager,login_user,UserMixin,current_user,login_required,logout_user
+from flask_login import LoginManager,UserMixin,login_required,login_user,logout_user,current_user
+from flask_migrate import Migrate
 
 app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database1.db"
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///mydata.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
+migrate = Migrate(app,db)
 login_manager = LoginManager()
 login_manager.init_app(app)
-app.secret_key = "sinasecret123"
+login_manager.login_view = "loginform"
+app.secret_key = "This-is-a-secret-key"
 
 class User(db.Model , UserMixin):
     id = db.Column(db.Integer , primary_key = True)
-    username = db.Column(db.String(100) , nullable = False)
+    username = db.Column(db.String(200) , nullable = False)
+    user_email = db.Column(db.String(500))
 
-with app.app_context():
-    db.create_all()
 
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
 
 @app.route("/")
-def redirecting():
-    return redirect(url_for("loginform"))
+def index():
+    return redirect(url_for("login"))
 
-@app.route("/login")
+@app.route("/mainlogin")
 def loginform():
     return render_template("fpr.html")
 
 @app.route("/users" , methods=["POST"])
-def create_user():
-    user = request.form.get("username" , "").strip()
+def show_user_situation():
+    user1 = request.form.get("username" , "").strip()
 
-    if user:
-        created_user = User(username = user)
+    if user1:
+        user = User(username = user1)
 
-        db.session.add(created_user)
+        db.session.add(user)
         db.session.commit()
 
-        login_user(created_user)
+        login_user(user)
 
         return "User created and logged in successfully!"
 
     return "User not found!"
 
-@app.route("/profile")
+@app.route("/logincheck")
 @login_required
-def profile():
-
+def login_check_required():
     username = current_user.username
     userid = current_user.id
 
@@ -58,16 +57,15 @@ def profile():
     print(current_user.username)
     print(current_user.id)
 
-    return render_template("logout.html" , username=username,userid=userid)
+    return render_template("profile.html" , username = username , userid = userid)
 
-@app.route("/logout" , methods=["POST"])
+@app.route("/logoutuser" , methods=["POST"])
 @login_required
-def logout_user_s():
+def log_out():
     username = current_user.username
 
     logout_user()
 
-    return "The user logged out successfully!"
-
+    return "User logged out successfully!"
 
 
