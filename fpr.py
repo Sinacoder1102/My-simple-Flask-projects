@@ -1,3 +1,5 @@
+from werkzeug.utils import secure_filename
+from werkzeug.exceptions import RequestEntityTooLarge
 from flask import Flask,request,render_template,redirect,url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager,UserMixin,login_required,login_user,logout_user,current_user
@@ -6,6 +8,8 @@ from flask_migrate import Migrate
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///mydata.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["MAX_CONTENT_LENGTH"] = 1 * 1024 * 1024
+
 db = SQLAlchemy(app)
 migrate = Migrate(app,db)
 login_manager = LoginManager()
@@ -25,7 +29,7 @@ def load_user(user_id):
 
 @app.route("/")
 def index():
-    return redirect(url_for("login"))
+    return redirect(url_for("loginform"))
 
 @app.route("/mainlogin")
 def loginform():
@@ -68,4 +72,31 @@ def log_out():
 
     return "User logged out successfully!"
 
+
+ALLOWED_EXTENSIONS = {"png" , "jpg" , "jpeg"}
+
+@app.route("/upload" , methods=["POST"])
+def upload_file():
+    file_get = request.files.get("uploadfile")
+
+    def allowed_file(filename):
+        return "." in filename and \
+                filename.rsplit("." , 1)[1].lower() in ALLOWED_EXTENSIONS
+
+    if not file_get:
+        return "No file!"
+
+    if not allowed_file(file_get.filename):
+        return "file type not allowed!"
+
+    filename = secure_filename(file_get.filename)
+    print(filename)
+
+    file_get.save("uploads/" + filename)
+
+    return "File uploaded successfully!"
+
+@app.errorhandler(RequestEntityTooLarge)
+def hanle_this_file(error):
+    return "<h1>Ops! : File length is very larger than 1 mb</h1>" , 413
 
