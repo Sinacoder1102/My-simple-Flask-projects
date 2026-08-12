@@ -102,19 +102,26 @@ def hanle_this_file(error):
 
 
 
-@app.route("/api/users")
+@app.route("/api/users" , methods=["POST"])
 def users():
-    username = User.query.all()
+    data = request.get_json()
+
+    user = User(
+        username = data["username"],
+        user_email = data["user_email"]
+    )
+
+    db.session.add(user)
+    db.session.commit()
 
     return {
-        "users" : [
-            {
-                "id" : user.id,
-                "username" : user.username
-            }
-            for user in username
-        ]
-    }
+        "message" : "user created successfully!",
+        "user" : {
+            "id" : user.id,
+            "username" : user.username,
+            "user_email" : user.user_email
+        }
+    } , 201
 
 @app.route("/api/users/<int:user_id>")
 def users_in_id(user_id):
@@ -128,3 +135,4 @@ def users_in_id(user_id):
         "username" : user.username,
         "email" : user.user_email
     }
+
