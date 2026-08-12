@@ -100,3 +100,31 @@ def upload_file():
 def hanle_this_file(error):
     return "<h1>Ops! : File length is very larger than 1 mb</h1>" , 413
 
+
+
+@app.route("/api/users")
+def users():
+    username = User.query.all()
+
+    return {
+        "users" : [
+            {
+                "id" : user.id,
+                "username" : user.username
+            }
+            for user in username
+        ]
+    }
+
+@app.route("/api/users/<int:user_id>")
+def users_in_id(user_id):
+    user = User.query.get(user_id)
+
+    if not user:
+        return "Ops! : User not found!" , 404
+
+    return {
+        "id" : user.id,
+        "username" : user.username,
+        "email" : user.user_email
+    }
