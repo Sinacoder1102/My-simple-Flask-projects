@@ -136,3 +136,91 @@ def users_in_id(user_id):
         "email" : user.user_email
     }
 
+@app.route("/api/useers")
+def userss():
+    data = User.query.all()
+
+    result_list = []
+
+    for username in data:
+        result_list.append(
+            {
+                "id" : username.id,
+                "username" : username.username
+            }
+        )
+
+    return {
+        "result" : result_list
+    }
+
+@app.route("/api/userss/<int:user_id>" , methods=["PUT"])
+def user_with_update(user_id):
+    user = User.query.get(user_id)
+
+    if not user:
+        return {
+            "message" : "user not found bro!"
+        } , 404
+
+    mydata = request.get_json()
+
+    user.username = mydata["username"]
+
+    db.session.commit()
+
+    return {
+        "message" : "User updated successfully!",
+        "user" : {
+            "id" : user.id,
+            "username" : user.username
+        }
+    }
+
+@app.route("/api/userdelete/<int:user_id>" , methods=["DELETE"])
+def delete_user_with_API(user_id):
+    user = User.query.get(user_id)
+
+    if not user:
+        return {
+            "message" : "Sorry! User not found!"
+        } , 404
+
+    db.session.delete(user)
+
+    db.session.commit()
+
+    return {
+        "message" : "User deleted successfully!",
+        "user" : {
+            "id" : user.id,
+            "username" : user.username
+        }
+    }
+
+
+@app.route("/api/userssss" , methods=["POST"])
+def json_test():
+    data = request.get_json()
+
+    if not data:
+        return {
+            "message" : "Ops! : Bad request"
+        } , 400
+
+    username = data.get("username" , "").strip()
+
+    if not username:
+        return {
+            "message" : "Username already required!"
+        } , 400
+
+    useremail = data.get("user_email" , "").strip()
+
+    if not useremail:
+        return {
+            "message" : "User email doesn't exists"
+        } , 400
+
+    return "op don!"
+
