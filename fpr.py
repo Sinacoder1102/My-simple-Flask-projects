@@ -1,3 +1,4 @@
+import re
 from werkzeug.utils import secure_filename
 from werkzeug.exceptions import RequestEntityTooLarge
 from flask import Flask,request,render_template,redirect,url_for
@@ -221,6 +222,11 @@ def json_test():
         return {
             "message" : "User email doesn't exists"
         } , 400
+
+    if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", useremail):
+        return {
+        "message": "Invalid email format"
+    }, 400
 
     return "op don!"
 
